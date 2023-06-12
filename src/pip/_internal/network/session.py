@@ -3,6 +3,7 @@ network request configuration and behavior.
 """
 
 import email.utils
+import importlib
 import io
 import ipaddress
 import json
@@ -326,6 +327,7 @@ class PipSession(requests.Session):
         trusted_hosts: Sequence[str] = (),
         index_urls: Optional[List[str]] = None,
         ssl_context: Optional["SSLContext"] = None,
+        auth_override_provider = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -342,7 +344,16 @@ class PipSession(requests.Session):
         self.headers["User-Agent"] = user_agent()
 
         # Attach our Authentication handler to the session
-        self.auth = MultiDomainBasicAuth(index_urls=index_urls)
+        if auth_override_provider:
+            import pip._internal.network.auth
+            m = importlib.import_module(auth_override_provider)
+            # pass the module so users can implement AuthBase and/or
+            # provide fallback to MultiDomainBasicAuth
+            self.auth = m.create_auth_override_provider(
+                    index_urls=index_urls,
+                    auth_module=pip._internal.network.auth)
+        else:
+            self.auth = MultiDomainBasicAuth(index_urls=index_urls)
 
         # Create our urllib3.Retry instance which will allow us to customize
         # how we handle retries.

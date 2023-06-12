@@ -265,6 +265,21 @@ keyring_provider: Callable[..., Option] = partial(
     ),
 )
 
+auth_override_provider: Callable[..., Option] = partial(
+    Option,
+    "--auth-override-provider",
+    dest="auth_override_provider",
+    type="str",
+    default=None,
+    help=(
+        "Python module which can replace MultiDomainBasicAuth."
+        "The module will be imported using importlib.import_module"
+        " expects a python file, with a function: "
+        "   create_auth_override_provider(auth_module, index_urls)."
+        " (default: None)"
+    ),
+)
+
 proxy: Callable[..., Option] = partial(
     Option,
     "--proxy",
@@ -1060,6 +1075,7 @@ general_group: Dict[str, Any] = {
         no_python_version_warning,
         use_new_feature,
         use_deprecated_feature,
+        auth_override_provider,
     ],
 }
 

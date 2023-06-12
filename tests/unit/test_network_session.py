@@ -76,6 +76,14 @@ class TestPipSession:
 
         assert session.adapters["https://"].cache.directory == cache_directory
 
+    def test_auth_override_provider(self, tmpdir: Path) -> None:
+        cache_directory = os.fspath(tmpdir.joinpath("test-cache"))
+        session = PipSession(
+                cache=cache_directory,
+                auth_override_provider='tests.lib.auth_override_provider_dummy')
+
+        assert session.auth.__class__.__name__ == "DummyAuthOverrideProvider"
+
     def test_http_cache_is_not_enabled(self, tmpdir: Path) -> None:
         session = PipSession(cache=os.fspath(tmpdir.joinpath("test-cache")))
 
